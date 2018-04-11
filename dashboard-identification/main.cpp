@@ -7,9 +7,37 @@
 //
 
 #include <iostream>
+#include <opencv2/opencv.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
+using namespace cv;
+void open(IplImage* src);
 
 int main(int argc, const char * argv[]) {
-    // insert code here...
-    std::cout << "Hello, World!\n";
+    IplImage *src;
+    src=cvLoadImage("/Users/admin/Desktop/picture/ss.jpeg",1);//原图
+//    open(src);
+    
+    Mat srcImage = imread("/Users/admin/Desktop/picture/ss.jpeg");
+//    imshow("Original Image", srcImage);
+    
+    Mat grayImage,edge;
+    //转换为灰度图
+    cvtColor(srcImage, grayImage, CV_BGR2GRAY);
+    //降噪
+    blur(grayImage, edge, Size(3,3));
+    //运行Canny算子，3为threshold1，9为threshold2
+    Canny(edge, edge, 3, 9);
+    
+    imshow("After canny", edge);
+    waitKey(0);
     return 0;
+}
+
+void open(IplImage* src) {
+    cvNamedWindow("admin",1);
+    cvShowImage("admin",src);
+    cvWaitKey(0);
+    cvDestroyWindow("admin");
+    cvReleaseImage(&src);
 }
