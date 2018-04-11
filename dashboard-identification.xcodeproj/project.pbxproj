@@ -56,6 +56,7 @@
 		8102FB37207E38F10021FE26 /* libopencv_videostab.3.2.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8102FB07207E38F00021FE26 /* libopencv_videostab.3.2.0.dylib */; };
 		8102FB38207E38F10021FE26 /* libopencv_videostab.3.2.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8102FB08207E38F00021FE26 /* libopencv_videostab.3.2.0.dylib */; };
 		8102FB39207E38F10021FE26 /* libopencv_videostab.3.2.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8102FB09207E38F00021FE26 /* libopencv_videostab.3.2.0.dylib */; };
+		8102FB41207E3C700021FE26 /* Picture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8102FB3F207E3C700021FE26 /* Picture.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -121,6 +122,8 @@
 		8102FB07207E38F00021FE26 /* libopencv_videostab.3.2.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_videostab.3.2.0.dylib; path = ../../../../../../usr/local/lib/libopencv_videostab.3.2.0.dylib; sourceTree = "<group>"; };
 		8102FB08207E38F00021FE26 /* libopencv_videostab.3.2.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_videostab.3.2.0.dylib; path = ../../../../../../usr/local/lib/libopencv_videostab.3.2.0.dylib; sourceTree = "<group>"; };
 		8102FB09207E38F00021FE26 /* libopencv_videostab.3.2.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_videostab.3.2.0.dylib; path = ../../../../../../usr/local/lib/libopencv_videostab.3.2.0.dylib; sourceTree = "<group>"; };
+		8102FB3F207E3C700021FE26 /* Picture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Picture.cpp; sourceTree = "<group>"; };
+		8102FB40207E3C700021FE26 /* Picture.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Picture.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -202,6 +205,7 @@
 		8102F830207E31940021FE26 /* dashboard-identification */ = {
 			isa = PBXGroup;
 			children = (
+				8102FB3E207E3C530021FE26 /* pic */,
 				8102F831207E31940021FE26 /* main.cpp */,
 			);
 			path = "dashboard-identification";
@@ -262,6 +266,15 @@
 			name = lib;
 			sourceTree = "<group>";
 		};
+		8102FB3E207E3C530021FE26 /* pic */ = {
+			isa = PBXGroup;
+			children = (
+				8102FB3F207E3C700021FE26 /* Picture.cpp */,
+				8102FB40207E3C700021FE26 /* Picture.hpp */,
+			);
+			name = pic;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -319,6 +332,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8102FB41207E3C700021FE26 /* Picture.cpp in Sources */,
 				8102F832207E31940021FE26 /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

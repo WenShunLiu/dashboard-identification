@@ -9,16 +9,37 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-
+#include <string>
+#include "Picture.hpp"
 using namespace cv;
+
+int main(int argc, const char * argv[]) {
+    String demoSrc = "/Users/admin/Desktop/graduation/pic/meter2.jpeg";
+    Picture demoPic(demoSrc);
+    demoPic.showPic();
+    return 0;
+};
+
+
+
+
+
+
+
+
+
+
+
+ // 下面为初始例子
+/*
 void open(IplImage* src);
 
 int main(int argc, const char * argv[]) {
     IplImage *src;
-    src=cvLoadImage("/Users/admin/Desktop/picture/ss.jpeg",1);//原图
+    src=cvLoadImage("/Users/admin/Desktop/graduation/pic/meter2.jpeg",1);//原图
 //    open(src);
     
-    Mat srcImage = imread("/Users/admin/Desktop/picture/ss.jpeg");
+    Mat srcImage = imread("/Users/admin/Desktop/graduation/pic/meter2.jpeg");
 //    imshow("Original Image", srcImage);
     
     Mat grayImage,edge;
@@ -41,3 +62,4 @@ void open(IplImage* src) {
     cvDestroyWindow("admin");
     cvReleaseImage(&src);
 }
+ */
