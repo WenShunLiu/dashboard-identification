@@ -12,16 +12,20 @@
 #include <stdio.h>
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include <string>
+#include <typeinfo>
 using namespace cv;
 
 class Picture {
 private:
-    String src; // 路径
+    Mat firstPic; // 图片
+    Mat panePic; // 提取表盘区域后的图像
+    Mat centerPoint;
 public:
-    Picture(String src); // 构造函数
-    void showPic(); // 展示图片
-    void openPic(); // 打开图片(貌似和showPic是一样的)
+    Picture(Mat firstPic); // 构造函数
+    void showFirstPic(); // 展示原始图片
+    void getPanePic(); // 获取表盘图片
+    void showPanePic(); // 展示表盘
+    Mat getcenterPoint(); // 获取表盘圆心坐标
 };
 
 #endif /* Picture_hpp */

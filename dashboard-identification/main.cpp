@@ -15,8 +15,11 @@ using namespace cv;
 
 int main(int argc, const char * argv[]) {
     String demoSrc = "/Users/admin/Desktop/graduation/pic/meter2.jpeg";
-    Picture demoPic(demoSrc);
-    demoPic.showPic();
+    Mat imgSrc = imread(demoSrc);
+    Picture demoPic(imgSrc);
+    demoPic.showFirstPic();
+    demoPic.showPanePic();
+    demoPic.getcenterPoint();
     return 0;
 };
 
