@@ -37,34 +37,40 @@ void Picture::getPanePic() {
     threshold(thre, edge, 90, 255, THRESH_BINARY);
     // 运行Canny算子，3为threshold1，9为threshold2
     Canny(edge, edge, 3, 9);
-    this->panePic = edge;
+    
+    IplImage src(this->firstPic);
+    IplImage *dst = cvCreateImage(cvGetSize(&src),8,1);
+    IplImage *color_dst = cvCreateImage(cvGetSize(&src),8,3);
+    cvCanny(&src,dst,50,200,3);
+    cvCvtColor(dst,color_dst,CV_GRAY2BGR);
+    this->panePic = dst;
+    this->paneDraw =color_dst;
 };
 
 // 显示 盘身图片
 void Picture::showPanePic() {
     this->getPanePic();
-    if(this->panePic.empty()) {
-        std::cout << "获取表盘失败" << std::endl;
-        return;
-    }
-    imshow("盘身", this->panePic);
+    cvNamedWindow("pan body");
+    cvShowImage("pan body",this->panePic);
     waitKey(0);
 };
 
 // 获取圆心坐标
 void Picture::getcenterPoint() {
     
-    IplImage *src = cvLoadImage("/Users/admin/Desktop/graduation/pic/meter1.jpeg",0);
-    IplImage *dst = cvCreateImage(cvGetSize(src),8,1);
-    IplImage *color_dst = cvCreateImage(cvGetSize(src),8,3);
-    CvMemStorage *storage = cvCreateMemStorage();
-    cvCanny(src,dst,50,200,3);
+//    IplImage *src = cvLoadImage("/Users/admin/Desktop/graduation/pic/meter1.jpeg",0);
+    IplImage src(this->firstPic);
+    IplImage *dst = cvCreateImage(cvGetSize(&src),8,1);
+    IplImage *color_dst = cvCreateImage(cvGetSize(&src),8,3);
+    
+    cvCanny(&src,dst,50,200,3);
     
     cvCvtColor(dst,color_dst,CV_GRAY2BGR);
     
+    CvMemStorage *storage = cvCreateMemStorage();
     CvSeq *circles = 0;
     int i = 0;
-    circles = cvHoughCircles(dst, storage, CV_HOUGH_GRADIENT, dst->width / 10, 100);
+    circles = cvHoughCircles(dst, storage, CV_HOUGH_GRADIENT, dst->width / 15, 10);
     for (i = 0; i < circles->total; i++) {
          float* p = (float*)cvGetSeqElem(circles, i);
         CvPoint pt = cvPoint(cvRound(p[0]), cvRound(p[1]));//圆心坐标（p（0），p（1））
@@ -80,13 +86,14 @@ void Picture::getcenterPoint() {
 // 获取指针
 void Picture::getPointer() {
     
-    IplImage *src = cvLoadImage("/Users/admin/Desktop/graduation/pic/meter1.jpeg",0);
-    IplImage *dst = cvCreateImage(cvGetSize(src),8,1);
-    IplImage *color_dst = cvCreateImage(cvGetSize(src),8,3);
+//    IplImage *src = cvLoadImage("/Users/admin/Desktop/graduation/pic/meter1.jpeg",0);
+    IplImage src(this->firstPic);
+    IplImage *dst = cvCreateImage(cvGetSize(&src),8,1);
+    IplImage *color_dst = cvCreateImage(cvGetSize(&src),8,3);
     CvMemStorage *storage = cvCreateMemStorage();
     CvSeq *lines = 0;
     int i ;
-    cvCanny(src,dst,50,200,3);
+    cvCanny(&src,dst,50,200,3);
     
     cvCvtColor(dst,color_dst,CV_GRAY2BGR);
     
@@ -175,14 +182,13 @@ void Picture::getPointer() {
     
     
     cvNamedWindow("Source");
-    cvShowImage("Source",src);
+    cvShowImage("Source",&src);
     
     cvNamedWindow("Hough");
     cvShowImage("Hough",color_dst);
     
     cvWaitKey(0);
     
-    cvReleaseImage(&src);
     cvReleaseImage(&dst);
     cvReleaseImage(&color_dst);
     cvReleaseMemStorage(&storage);

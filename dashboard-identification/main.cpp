@@ -14,7 +14,7 @@
 using namespace cv;
 
 int main(int argc, const char * argv[]) {
-    String demoSrc = "/Users/admin/Desktop/graduation/pic/meter1.jpeg";
+    String demoSrc = "/Users/admin/Desktop/graduation/pic/meter5.jpeg";
     Mat imgSrc = imread(demoSrc);
     if(imgSrc.empty()) {
         std::cout << "图片打开失败" << std::endl;

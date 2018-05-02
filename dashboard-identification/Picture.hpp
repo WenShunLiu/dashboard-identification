@@ -22,7 +22,8 @@ using namespace cv;
 class Picture {
 private:
     Mat firstPic; // 图片
-    Mat panePic; // 提取表盘区域后的图像
+    IplImage *panePic; // 提取表盘区域后的图像
+    IplImage *paneDraw; // 用于绘制的表盘
     Point_<float> centerPoint; // 圆心坐标
     CvPoint *pointer; //指针
 public:
