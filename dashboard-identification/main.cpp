@@ -14,7 +14,7 @@
 using namespace cv;
 
 int main(int argc, const char * argv[]) {
-    String demoSrc = "/Users/admin/Desktop/graduation/pic/meter5.jpeg";
+    String demoSrc = "/Users/admin/Desktop/graduation/pic/meter1.jpeg";
     Mat imgSrc = imread(demoSrc);
     if(imgSrc.empty()) {
         std::cout << "图片打开失败" << std::endl;
@@ -26,9 +26,9 @@ int main(int argc, const char * argv[]) {
     
     demoPic.showPanePic();
     
-    demoPic.getcenterPoint();
+    CvPoint centerPoint = demoPic.getcenterPoint();
     
-//    std::cout << "圆心坐标为：" << centerPoint << std::endl;
+    std::cout << "圆心坐标为：[" << centerPoint.x << ", " << centerPoint.y<< "]" << std::endl;
     
     demoPic.getPointer();
     

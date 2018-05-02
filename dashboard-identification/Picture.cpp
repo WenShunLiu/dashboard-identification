@@ -24,24 +24,13 @@ void Picture::showFirstPic() {
 
 // 获取盘身
 void Picture::getPanePic() {
-    Mat grayImage; //灰度图
-    Mat thre;
-    Mat edge; // 降噪图
-    //转换为灰度图
-    cvtColor(this->firstPic, grayImage, CV_BGR2GRAY);
-    //降噪
-    blur(grayImage, thre, Size(3,3));
-    // 高斯滤波
-    GaussianBlur(thre, thre, Size(9, 9), 2, 2);
-    // 图像二值化，
-    threshold(thre, edge, 90, 255, THRESH_BINARY);
-    // 运行Canny算子，3为threshold1，9为threshold2
-    Canny(edge, edge, 3, 9);
     
     IplImage src(this->firstPic);
     IplImage *dst = cvCreateImage(cvGetSize(&src),8,1);
     IplImage *color_dst = cvCreateImage(cvGetSize(&src),8,3);
+    // 运行Canny算子 ,边缘提取
     cvCanny(&src,dst,50,200,3);
+    // 转化为单通道
     cvCvtColor(dst,color_dst,CV_GRAY2BGR);
     this->panePic = dst;
     this->paneDraw =color_dst;
@@ -56,49 +45,51 @@ void Picture::showPanePic() {
 };
 
 // 获取圆心坐标
-void Picture::getcenterPoint() {
+CvPoint Picture::getcenterPoint() {
     
-//    IplImage *src = cvLoadImage("/Users/admin/Desktop/graduation/pic/meter1.jpeg",0);
-    IplImage src(this->firstPic);
-    IplImage *dst = cvCreateImage(cvGetSize(&src),8,1);
-    IplImage *color_dst = cvCreateImage(cvGetSize(&src),8,3);
-    
-    cvCanny(&src,dst,50,200,3);
-    
-    cvCvtColor(dst,color_dst,CV_GRAY2BGR);
     
     CvMemStorage *storage = cvCreateMemStorage();
     CvSeq *circles = 0;
     int i = 0;
-    circles = cvHoughCircles(dst, storage, CV_HOUGH_GRADIENT, dst->width / 15, 10);
+    circles = cvHoughCircles(this->panePic, storage, CV_HOUGH_GRADIENT, this->panePic->width /15, 10);
+    
+    // 直径最大的圆
+    float maxRadius = 0;
+    
+    // 直径最大的圆的圆心坐标
+    CvPoint manRCircl = 0;
     for (i = 0; i < circles->total; i++) {
          float* p = (float*)cvGetSeqElem(circles, i);
         CvPoint pt = cvPoint(cvRound(p[0]), cvRound(p[1]));//圆心坐标（p（0），p（1））
-        cvCircle(color_dst, pt, cvRound(p[2]),CV_RGB(255,0,0), 3);
+//        cvCircle(this->paneDraw, pt, cvRound(p[2]),CV_RGB(255,0,0), 3);
+        if (cvRound(p[2]) > maxRadius) {
+            maxRadius = cvRound(p[2]);
+            manRCircl = pt;
+        }
     }
     
+    // 画出圆
+    cvCircle(this->paneDraw, manRCircl, maxRadius,CV_RGB(255,0,0), 3);
+    this->centerPoint = manRCircl;
+    
+    
+    // 画出圆心
+    cvCircle( this->paneDraw, manRCircl, 2, CV_RGB(255,0,0),-1, 8, 0 );
     cvNamedWindow("circle");
-    cvShowImage("circle",color_dst);
+    cvShowImage("circle",this->paneDraw);
     
     cvWaitKey(0);
+    return manRCircl;
 };
 
 // 获取指针
 void Picture::getPointer() {
     
-//    IplImage *src = cvLoadImage("/Users/admin/Desktop/graduation/pic/meter1.jpeg",0);
-    IplImage src(this->firstPic);
-    IplImage *dst = cvCreateImage(cvGetSize(&src),8,1);
-    IplImage *color_dst = cvCreateImage(cvGetSize(&src),8,3);
-    CvMemStorage *storage = cvCreateMemStorage();
     CvSeq *lines = 0;
     int i ;
-    cvCanny(&src,dst,50,200,3);
-    
-    cvCvtColor(dst,color_dst,CV_GRAY2BGR);
-    
+    CvMemStorage *storage = cvCreateMemStorage();
 #if 0
-    lines = cvHoughLines2(dst,storage,CV_HOUGH_STANDARD,1,CV_PI/180,150,0,0);
+    lines = cvHoughLines2(this->panePic,storage,CV_HOUGH_STANDARD,1,CV_PI/180,150,0,0);
     
     for (i=0;i<lines->total;i++)
     {
@@ -112,13 +103,13 @@ void Picture::getPointer() {
         {
             pt1.x = pt2.x = cvRound(rho);
             pt1.y = 0;
-            pt2.y = color_dst->height;
+            pt2.y = this->paneDraw->height;
         }
         else if (fabs(b)<0.001)
         {
             pt1.y = pt2.y = cvRound(rho);
             pt1.x = 0;
-            pt2.x = color_dst->width;
+            pt2.x = this->paneDraw->width;
         }
         else
         {
@@ -133,7 +124,7 @@ void Picture::getPointer() {
 #else
     
     
-    lines = cvHoughLines2(dst,storage,CV_HOUGH_PROBABILISTIC,1,CV_PI/180,80,30,5);
+    lines = cvHoughLines2(this->panePic,storage,CV_HOUGH_PROBABILISTIC,1,CV_PI/180,80,30,5);
     
     for (i=0;i<lines->total;i++)
     {
@@ -167,30 +158,14 @@ void Picture::getPointer() {
     std::cout << "maxLength = " << maxLength << std::endl;
     
     this->pointer = maxLengthline;
-    cvLine(color_dst,maxLengthline[0],maxLengthline[1],CV_RGB(255,0,0),1,CV_AA);
-    
-    int pointX, pointY;
-    pointX = static_cast<int>( this->centerPoint.x);
-    pointY = static_cast<int>( this->centerPoint.y);
-    
-    // 圆心坐标
-    CvPoint centerPoint = CvPoint(pointX, pointY);
-    
-    // 画出圆心
-    cvCircle( color_dst, centerPoint, 2, CV_RGB(255,0,0),
-             -1, 8, 0 );
+    cvLine(this->paneDraw,maxLengthline[0],maxLengthline[1],CV_RGB(255,0,0),1,CV_AA);
     
     
-    cvNamedWindow("Source");
-    cvShowImage("Source",&src);
-    
-    cvNamedWindow("Hough");
-    cvShowImage("Hough",color_dst);
+    cvNamedWindow("point");
+    cvShowImage("point",this->paneDraw);
     
     cvWaitKey(0);
     
-    cvReleaseImage(&dst);
-    cvReleaseImage(&color_dst);
     cvReleaseMemStorage(&storage);
     
     cvDestroyAllWindows();
