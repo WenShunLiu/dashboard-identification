@@ -14,12 +14,24 @@
 using namespace cv;
 
 int main(int argc, const char * argv[]) {
-    String demoSrc = "/Users/admin/Desktop/graduation/pic/meter2.jpeg";
+    String demoSrc = "/Users/admin/Desktop/graduation/pic/meter1.jpeg";
     Mat imgSrc = imread(demoSrc);
+    if(imgSrc.empty()) {
+        std::cout << "图片打开失败" << std::endl;
+        return 0;
+    }
     Picture demoPic(imgSrc);
+    
     demoPic.showFirstPic();
+    
     demoPic.showPanePic();
-    demoPic.getcenterPoint();
+    
+    Point_<float> centerPoint = demoPic.getcenterPoint();
+    
+    std::cout << "圆心坐标为：" << centerPoint << std::endl;
+    
+    demoPic.getPointer();
+    
     return 0;
 };
 
