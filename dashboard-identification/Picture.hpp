@@ -24,13 +24,14 @@ private:
     Mat firstPic; // 图片
     Mat panePic; // 提取表盘区域后的图像
     Point_<float> centerPoint; // 圆心坐标
+    CvPoint *pointer; //指针
 public:
     Picture(Mat firstPic); // 构造函数
     void showFirstPic(); // 展示原始图片
     void getPanePic(); // 获取表盘图片
     void showPanePic(); // 展示表盘
-    Point_<float> getcenterPoint(); // 获取表盘圆心坐标
-    void getPointer();
+    void getcenterPoint(); // 获取表盘圆心坐标
+    void getPointer(); //获取指针
 };
 
 #endif /* Picture_hpp */

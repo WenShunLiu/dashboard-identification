@@ -26,9 +26,9 @@ int main(int argc, const char * argv[]) {
     
     demoPic.showPanePic();
     
-    Point_<float> centerPoint = demoPic.getcenterPoint();
+    demoPic.getcenterPoint();
     
-    std::cout << "圆心坐标为：" << centerPoint << std::endl;
+//    std::cout << "圆心坐标为：" << centerPoint << std::endl;
     
     demoPic.getPointer();
     

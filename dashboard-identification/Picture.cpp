@@ -52,27 +52,32 @@ void Picture::showPanePic() {
 };
 
 // 获取圆心坐标
-Point_<float> Picture::getcenterPoint() {
-    Mat demo;
-    std::vector<std::vector<Point>>contours;
-    std::vector<Vec4i>hierarchy;
-    //查找出所有的圆边界
-    findContours(this->panePic, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
-    int index = 0;
-    for (; index >= 0; index = hierarchy[index][0])
-    {
-        Scalar color(rand() & 255, rand() & 255, rand() & 255);
-        drawContours(this->firstPic, contours, index, color, CV_FILLED, 8, hierarchy);
+void Picture::getcenterPoint() {
+    
+    IplImage *src = cvLoadImage("/Users/admin/Desktop/graduation/pic/meter1.jpeg",0);
+    IplImage *dst = cvCreateImage(cvGetSize(src),8,1);
+    IplImage *color_dst = cvCreateImage(cvGetSize(src),8,3);
+    CvMemStorage *storage = cvCreateMemStorage();
+    cvCanny(src,dst,50,200,3);
+    
+    cvCvtColor(dst,color_dst,CV_GRAY2BGR);
+    
+    CvSeq *circles = 0;
+    int i = 0;
+    circles = cvHoughCircles(dst, storage, CV_HOUGH_GRADIENT, dst->width / 10, 100);
+    for (i = 0; i < circles->total; i++) {
+         float* p = (float*)cvGetSeqElem(circles, i);
+        CvPoint pt = cvPoint(cvRound(p[0]), cvRound(p[1]));//圆心坐标（p（0），p（1））
+        cvCircle(color_dst, pt, cvRound(p[2]),CV_RGB(255,0,0), 3);
     }
-    //标准圆在图片上一般是椭圆，所以采用OpenCV中拟合椭圆的方法求解中心
-    Mat pointsf;
-    Mat(contours[0]).convertTo(pointsf, CV_32F);
-    RotatedRect box = fitEllipse(pointsf);
-    this->centerPoint = box.center;
-    return box.center;
+    
+    cvNamedWindow("circle");
+    cvShowImage("circle",color_dst);
+    
+    cvWaitKey(0);
 };
 
-
+// 获取指针
 void Picture::getPointer() {
     
     IplImage *src = cvLoadImage("/Users/admin/Desktop/graduation/pic/meter1.jpeg",0);
@@ -154,8 +159,21 @@ void Picture::getPointer() {
     }
     std::cout << "maxLength = " << maxLength << std::endl;
     
-    
+    this->pointer = maxLengthline;
     cvLine(color_dst,maxLengthline[0],maxLengthline[1],CV_RGB(255,0,0),1,CV_AA);
+    
+    int pointX, pointY;
+    pointX = static_cast<int>( this->centerPoint.x);
+    pointY = static_cast<int>( this->centerPoint.y);
+    
+    // 圆心坐标
+    CvPoint centerPoint = CvPoint(pointX, pointY);
+    
+    // 画出圆心
+    cvCircle( color_dst, centerPoint, 2, CV_RGB(255,0,0),
+             -1, 8, 0 );
+    
+    
     cvNamedWindow("Source");
     cvShowImage("Source",src);
     
