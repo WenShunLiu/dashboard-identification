@@ -9,18 +9,23 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include<opencv2/highgui/highgui.hpp>
 #include <string>
 #include "Picture.hpp"
 using namespace cv;
 
 int main(int argc, const char * argv[]) {
-    String demoSrc = "/Users/admin/Desktop/graduation/pic/meter1.jpeg";
+    String flod = "meter1";
+    String demoSrc = "/Users/admin/Desktop/graduation/pic/" + flod + "/index.jpeg";
+    String zerosrc = "/Users/admin/Desktop/graduation/pic/"+flod+"/zero.png";
+    String fullsrc = "/Users/admin/Desktop/graduation/pic/"+flod+"/full.png";
     Mat imgSrc = imread(demoSrc);
     if(imgSrc.empty()) {
         std::cout << "图片打开失败" << std::endl;
         return 0;
     }
-    Picture demoPic(imgSrc);
+    
+    Picture demoPic(imgSrc,zerosrc,fullsrc);
     
     demoPic.showFirstPic();
     
@@ -32,6 +37,7 @@ int main(int argc, const char * argv[]) {
     
     demoPic.getPointer();
     
+    demoPic.getScale();
     return 0;
 };
 

@@ -119,5 +119,6 @@ dependencies: \
   /usr/local/include/opencv2/videostab/wobble_suppression.hpp \
   /usr/local/include/opencv2/videostab/ring_buffer.hpp \
   /usr/local/include/opencv2/imgproc/imgproc.hpp \
+  /usr/local/include/opencv2/highgui/highgui.hpp \
   /Users/admin/Desktop/graduation/code/dashboard-identification/dashboard-identification/Picture.hpp \
   /usr/local/include/opencv/highgui.h

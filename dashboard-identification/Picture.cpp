@@ -7,18 +7,19 @@
 //
 
 #include "Picture.hpp"
+CvPoint getScalePoint(Mat image,String src, int method);
+CvPoint maxPoint(CvPoint pointone, CvPoint pointtwo, CvPoint center); // 求到圆心距离最长的点
 
-std::vector<Point> getPoints(Mat &image, int value);
-void drawLine(cv::Mat &image, double theta, double rho, cv::Scalar color);
 
-
-Picture::Picture(Mat firstPic) {
+Picture::Picture(Mat firstPic, String zeroPicSrc,String fullPicSrc) {
     this->firstPic = firstPic;
+    this->zeroPicSrc = zeroPicSrc;
+    this->fullPicSrc = fullPicSrc;
 };
 
 // 显示原图
 void Picture::showFirstPic() {
-    imshow("原图", this->firstPic);
+    imshow("orign pic", this->firstPic);
     waitKey(0);
 };
 
@@ -126,13 +127,13 @@ void Picture::getPointer() {
     
     lines = cvHoughLines2(this->panePic,storage,CV_HOUGH_PROBABILISTIC,1,CV_PI/180,80,30,5);
     
-    for (i=0;i<lines->total;i++)
-    {
+//    for (i=0;i<lines->total;i++)
+//    {
         // 得到的直线转化成CvPoint型数据，该型数据包含点的横竖坐标；
-        CvPoint *line = (CvPoint *)cvGetSeqElem(lines,i);
+//        CvPoint *line = (CvPoint *)cvGetSeqElem(lines,i);
         // 画线函数 分别为直线的起始端点和结束端点
 //        cvLine(color_dst,line[0],line[1],CV_RGB(255,0,0),1,CV_AA);
-    }
+//    }
 #endif
     // 存放找到的线段长度的数组
     double maxLength = 0;
@@ -140,9 +141,6 @@ void Picture::getPointer() {
     
     for (i = 0; i < lines->total; i++) {
         CvPoint *line = (CvPoint *)cvGetSeqElem(lines,i);
-    
-//        std::cout <<i << ":[ [" << line[0].x<< "," << line[0].y << "]"<< ",[" << line[1].x << "," << line[1].y<< "] ]"<< std::endl;
-        
         int startX = line[0].x;
         int startY = line[0].y;
         int endX = line[1].x;
@@ -152,15 +150,20 @@ void Picture::getPointer() {
             maxLength = length;
             maxLengthline = line;
         }
-//        std::cout << "length = " << length << std::endl;
-
     }
-    std::cout << "maxLength = " << maxLength << std::endl;
+//    std::cout << "maxLength = " << maxLength << std::endl;
     
-    this->pointer = maxLengthline;
     cvLine(this->paneDraw,maxLengthline[0],maxLengthline[1],CV_RGB(255,0,0),1,CV_AA);
     
     
+    
+    CvPoint pointer = maxPoint(maxLengthline[0], maxLengthline[1], this->centerPoint);
+    
+    std::cout<< "指针: "<< pointer.x << "," << pointer.y<< std::endl;
+    
+    this->pointer = pointer;
+    
+    cvCircle(this->paneDraw, pointer, 4,CV_RGB(255,0,0),-1, 8, 0);
     cvNamedWindow("point");
     cvShowImage("point",this->paneDraw);
     
@@ -169,6 +172,78 @@ void Picture::getPointer() {
     cvReleaseMemStorage(&storage);
     
     cvDestroyAllWindows();
+    
+}
+
+//得到0刻度
+void Picture::getScale() {
+    Mat image = this->firstPic;
+    // 获取0刻度位置
+    CvPoint zeroPoint =getScalePoint(image, this->zeroPicSrc, CV_TM_SQDIFF_NORMED);
+    std::cout<< "zeroPoint: "<< zeroPoint.x << "," << zeroPoint.y << std::endl;
+    this->zeroScale =zeroPoint;
+    cvCircle(this->paneDraw, zeroPoint, 4,CV_RGB(255,0,0),-1, 8, 0);
+    
+    // 获取满偏刻度位置
+    CvPoint fullPoint =getScalePoint(image, this->fullPicSrc, CV_TM_SQDIFF_NORMED);
+    std::cout<< "fullPoint: "<< fullPoint.x << "," << fullPoint.y << std::endl;
+    this->fullScale =fullPoint;
+    cvCircle(this->paneDraw, fullPoint, 4,CV_RGB(255,0,0),-1, 8, 0);
+    cvShowImage("scale", this->paneDraw);
+    waitKey(0);
+}
+
+
+
+//  以下为辅助函数
+
+// 模板匹配，获取0刻度和满偏刻度位置
+CvPoint getScalePoint(Mat image, String src, int method) {
+    Mat tepl = imread(src);
+    resize(tepl, tepl, Size(tepl.cols/2,tepl.rows/2),0,0,INTER_LINEAR);
+    CvPoint point;
+    int result_cols =  image.cols - tepl.cols + 1;
+    int result_rows = image.rows - tepl.rows + 1;
+    
+    Mat result = Mat( result_cols, result_rows, CV_32FC1 );
+    matchTemplate( image, tepl, result, method );
+    
+    double minVal, maxVal;
+    Point minLoc, maxLoc;
+    minMaxLoc( result, &minVal, &maxVal, &minLoc, &maxLoc, Mat() );
+    
+    switch(method)
+    {
+        case CV_TM_SQDIFF:
+            point = minLoc;
+            //            return minVal / (tepl.cols * tepl.cols);
+            break;
+        case CV_TM_SQDIFF_NORMED:
+            point = minLoc;
+            //            return minVal;
+            break;
+        case CV_TM_CCORR:
+        case CV_TM_CCOEFF:
+            point = maxLoc;
+            //            return maxVal / (tepl.cols * tepl.cols);
+            break;
+        case CV_TM_CCORR_NORMED:
+        case CV_TM_CCOEFF_NORMED:
+        default:
+            point = maxLoc;
+            //            return maxVal;
+            break;
+    }
+    rectangle(image, point, Point(point.x + tepl.cols, point.y + tepl.rows), Scalar(0, 255, 0), 2, 8, 0);
+    return  CvPoint(point.x + tepl.cols/2, point.y + tepl.rows/2);
+};
+
+
+// 获取指针上离圆心最远的点
+CvPoint maxPoint(CvPoint pointone, CvPoint pointtwo, CvPoint center) {
+    double lengthone = pow(pointone.x-center.x, 2) + pow(pointone.y-center.y, 2);
+    double lengthtwo = pow(pointtwo.x-center.x, 2) + pow(pointtwo.y-center.y, 2);
+    return lengthone > lengthtwo ? pointone : pointtwo;
 }
 
 
@@ -184,9 +259,3 @@ void Picture::getPointer() {
 
 
 
-
-
-
-
-
-//  以下为辅助函数
