@@ -15,7 +15,7 @@
 using namespace cv;
 
 int main(int argc, const char * argv[]) {
-    String flod = "meter4";
+    String flod = "meter1";
     String demoSrc = "/Users/admin/Desktop/graduation/pic/" + flod + "/index.jpeg";
     String zerosrc = "/Users/admin/Desktop/graduation/pic/"+flod+"/zero.png";
     String fullsrc = "/Users/admin/Desktop/graduation/pic/"+flod+"/full.png";
@@ -24,7 +24,7 @@ int main(int argc, const char * argv[]) {
         std::cout << "图片打开失败" << std::endl;
         return 0;
     }
-    double Range = 80;
+    double Range = 500;
     Picture demoPic(imgSrc,zerosrc,fullsrc, Range);
     
     demoPic.showFirstPic();

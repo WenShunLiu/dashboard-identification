@@ -201,7 +201,7 @@ void Picture::getFullAngle() {
     CvPoint zeroP = this->zeroScale;
     CvPoint fullP = this->fullScale;
     double a1 = Angle(center, zeroP, fullP);
-    this->fullAngle = 360-a1;
+    this->fullAngle = a1;
 }
 
 // 获取当前指针偏移角度
@@ -293,6 +293,7 @@ CvPoint maxPoint(CvPoint pointone, CvPoint pointtwo, CvPoint center) {
 // 获取两条向量的角度cosABC=BA*CB/a*b,分子是向量相乘,AB=a,BC=b
 double Angle(Point cen, Point first, Point second)
 {
+    double angleAMB;
     Point newZerop = Point(first.x - cen.x, first.y-cen.y);
     Point newFullp = Point(second.x - cen.x, second.y-cen.y);
     double ma_x = first.x - cen.x;
@@ -303,11 +304,25 @@ double Angle(Point cen, Point first, Point second)
     double ma_val = sqrt(ma_x * ma_x + ma_y * ma_y);
     double mb_val = sqrt(mb_x * mb_x + mb_y * mb_y);
     double cosM = v1 / (ma_val * mb_val);
-//    std::cout<<"cosM:"<<cosM<<std::endl;
-//    if (cosM<0) {
-//        
-//    }
-    double angleAMB = acos(cosM) * 180 / PI;
+    if (newZerop.x == 0) {
+        if(newFullp.x > 0) {
+            angleAMB = acos(cosM) * 180 / PI;
+        } else if(newFullp.x == 0) {
+            angleAMB = 180;
+        } else {
+            angleAMB =360- acos(cosM) * 180 / PI;
+        }
+    } else {
+        double zeroK = (double) newZerop.y/newZerop.x;
+        double y = zeroK*newFullp.x;
+        if(y<newZerop.y) {
+            angleAMB = acos(cosM) * 180 / PI;
+        } else if (y==newZerop.y){
+            angleAMB = 180;
+        }else {
+            angleAMB =360- acos(cosM) * 180 / PI;
+        }
+    }
     
     return angleAMB;
 }
