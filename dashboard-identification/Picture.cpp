@@ -9,12 +9,14 @@
 #include "Picture.hpp"
 CvPoint getScalePoint(Mat image,String src, int method);
 CvPoint maxPoint(CvPoint pointone, CvPoint pointtwo, CvPoint center); // 求到圆心距离最长的点
+double Angle(Point cen, Point first, Point second);
 
 
-Picture::Picture(Mat firstPic, String zeroPicSrc,String fullPicSrc) {
+Picture::Picture(Mat firstPic, String zeroPicSrc,String fullPicSrc, double Range) {
     this->firstPic = firstPic;
     this->zeroPicSrc = zeroPicSrc;
     this->fullPicSrc = fullPicSrc;
+    this->Range = Range;
 };
 
 // 显示原图
@@ -193,7 +195,44 @@ void Picture::getScale() {
     waitKey(0);
 }
 
+// 获取满偏角度
+void Picture::getFullAngle() {
+    CvPoint center = this->centerPoint;
+    CvPoint zeroP = this->zeroScale;
+    CvPoint fullP = this->fullScale;
+    double a1 = Angle(center, zeroP, fullP);
+    this->fullAngle = 360-a1;
+}
 
+// 获取当前指针偏移角度
+void Picture::getCurrentAngle() {
+    CvPoint center = this->centerPoint;
+    CvPoint zeroP = this->zeroScale;
+    CvPoint pointer = this->pointer;
+    double a1 = Angle(center, zeroP, pointer);
+    this->currentAngle = a1;
+}
+
+// 获取表盘读数
+double Picture::getData() {
+    double bili = (double) this->currentAngle/this->fullAngle;
+    std::cout << "currentAngle: " << this->currentAngle << std::endl;
+    std::cout << "fullAngle: " << this->fullAngle << std::endl;
+    std::cout << "bili: " << bili << std::endl;
+    double data = bili * this->Range;
+    std::cout << "data: " << data << std::endl;
+    this->data = data;
+    
+    
+    cvLine(this->paneDraw,this->centerPoint,this->zeroScale,CV_RGB(255,0,0),1,CV_AA);
+    cvLine(this->paneDraw,this->centerPoint,this->fullScale,CV_RGB(255,0,0),1,CV_AA);
+    cvLine(this->paneDraw,this->centerPoint,this->pointer,CV_RGB(255,0,0),1,CV_AA);
+    cvNamedWindow("data");
+    cvShowImage("data",this->paneDraw);
+    
+    cvWaitKey(0);
+    return data;
+}
 
 //  以下为辅助函数
 
@@ -234,7 +273,7 @@ CvPoint getScalePoint(Mat image, String src, int method) {
             //            return maxVal;
             break;
     }
-    rectangle(image, point, Point(point.x + tepl.cols, point.y + tepl.rows), Scalar(0, 255, 0), 2, 8, 0);
+//    rectangle(image, point, Point(point.x + tepl.cols, point.y + tepl.rows), Scalar(0, 255, 0), 2, 8, 0);
     return  CvPoint(point.x + tepl.cols/2, point.y + tepl.rows/2);
 };
 
@@ -251,11 +290,24 @@ CvPoint maxPoint(CvPoint pointone, CvPoint pointtwo, CvPoint center) {
 
 
 
-
-
-
-
-
-
-
-
+// 获取两条向量的角度cosABC=BA*CB/a*b,分子是向量相乘,AB=a,BC=b
+double Angle(Point cen, Point first, Point second)
+{
+    Point newZerop = Point(first.x - cen.x, first.y-cen.y);
+    Point newFullp = Point(second.x - cen.x, second.y-cen.y);
+    double ma_x = first.x - cen.x;
+    double ma_y = first.y - cen.y;
+    double mb_x = second.x - cen.x;
+    double mb_y = second.y - cen.y;
+    double v1 = (ma_x * mb_x) + (ma_y * mb_y);
+    double ma_val = sqrt(ma_x * ma_x + ma_y * ma_y);
+    double mb_val = sqrt(mb_x * mb_x + mb_y * mb_y);
+    double cosM = v1 / (ma_val * mb_val);
+//    std::cout<<"cosM:"<<cosM<<std::endl;
+//    if (cosM<0) {
+//        
+//    }
+    double angleAMB = acos(cosM) * 180 / PI;
+    
+    return angleAMB;
+}
