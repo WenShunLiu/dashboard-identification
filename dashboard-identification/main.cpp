@@ -15,17 +15,30 @@
 using namespace cv;
 
 int main(int argc, const char * argv[]) {
-    String flod = "meter1";
+//    std::cout<< "参数1" << argc << std::endl;
+//    std::cout<< "参数2" << argv[0]<< "," << argv[1] << std::endl;
+    
+//    String flod = argv[1];
+//    String demoSrc = flod + "/index.jpeg";
+//    String zerosrc = flod+"/zero.png";
+//    String fullsrc = flod+"/full.png";
+//    String tmpsrc = flod+"/index2.jpeg";
+    
+    String flod = "meter4";
     String demoSrc = "/Users/admin/Desktop/graduation/pic/" + flod + "/index.jpeg";
     String zerosrc = "/Users/admin/Desktop/graduation/pic/"+flod+"/zero.png";
     String fullsrc = "/Users/admin/Desktop/graduation/pic/"+flod+"/full.png";
+    String tmpsrc = "/Users/admin/Desktop/graduation/pic/"+flod+"/index2.jpeg";
+
     Mat imgSrc = imread(demoSrc);
+    
     if(imgSrc.empty()) {
         std::cout << "图片打开失败" << std::endl;
         return 0;
     }
-    double Range = 500;
-    Picture demoPic(imgSrc,zerosrc,fullsrc, Range);
+    double Range = 80;
+    resize(imgSrc, imgSrc, Size(imgSrc.cols*2,imgSrc.rows*2),0,0,INTER_LINEAR);
+    Picture demoPic(imgSrc,zerosrc,fullsrc, tmpsrc, Range);
     
     demoPic.showFirstPic();
     

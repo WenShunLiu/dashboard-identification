@@ -15,7 +15,7 @@
 #include<opencv2/highgui/highgui.hpp>
 
 #include <typeinfo>
-#include <highgui.h>
+//#include <highgui.h>
 #include <math.h>
 using namespace cv;
 
@@ -26,10 +26,12 @@ private:
     Mat firstPic; // 图片
     String zeroPicSrc; // 0刻度图片路径
     String fullPicSrc; // 满偏图片路径
+    String tmpPicSrc;
     IplImage *panePic; // 提取表盘区域后的图像
     IplImage *paneDraw; // 用于绘制的表盘
     double Range; // 量程
     CvPoint centerPoint; // 圆心坐标
+    float radius; // 圆半径
     CvPoint pointer; //指针
     CvPoint zeroScale; // 0刻度位置
     CvPoint fullScale; // 满偏刻度位置
@@ -37,7 +39,7 @@ private:
     double currentAngle; // 当前指针角度
     double data; //表盘读数
 public:
-    Picture(Mat firstPic,String zeroPicSrc,String fullPicSrc, double Range); // 构造函数
+    Picture(Mat firstPic,String zeroPicSrc,String fullPicSrc, String tmpPicSrc,double Range); // 构造函数
     void showFirstPic(); // 展示原始图片
     void getPanePic(); // 获取表盘图片
     void showPanePic(); // 展示表盘

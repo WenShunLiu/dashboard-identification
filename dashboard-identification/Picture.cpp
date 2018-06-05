@@ -10,19 +10,30 @@
 CvPoint getScalePoint(Mat image,String src, int method);
 CvPoint maxPoint(CvPoint pointone, CvPoint pointtwo, CvPoint center); // 求到圆心距离最长的点
 double Angle(Point cen, Point first, Point second);
+Point getTemplate(Mat image, String src, int method);
+double getlength (Point p1, Point p2);
 
-
-Picture::Picture(Mat firstPic, String zeroPicSrc,String fullPicSrc, double Range) {
-    this->firstPic = firstPic;
+Picture::Picture(Mat firstPic, String zeroPicSrc,String fullPicSrc, String tmpPicSrc, double Range) {
+    
+    Mat templatePic = imread(tmpPicSrc);
+    Point tmp = getTemplate(firstPic, tmpPicSrc, CV_TM_SQDIFF_NORMED);
+    std::cout<<"tmp:"<<tmp.x<<","<<tmp.y<<std::endl;
+    Rect rect(tmp.x,tmp.y, templatePic.cols, templatePic.rows);
+    Mat image = firstPic(rect);
+    
+    this->firstPic = image;
     this->zeroPicSrc = zeroPicSrc;
     this->fullPicSrc = fullPicSrc;
+    this->tmpPicSrc = tmpPicSrc;
     this->Range = Range;
 };
 
 // 显示原图
 void Picture::showFirstPic() {
+    
     imshow("orign pic", this->firstPic);
     waitKey(0);
+    
 };
 
 // 获取盘身
@@ -42,9 +53,11 @@ void Picture::getPanePic() {
 // 显示 盘身图片
 void Picture::showPanePic() {
     this->getPanePic();
+    
     cvNamedWindow("pan body");
     cvShowImage("pan body",this->panePic);
     waitKey(0);
+    
 };
 
 // 获取圆心坐标
@@ -64,7 +77,9 @@ CvPoint Picture::getcenterPoint() {
     for (i = 0; i < circles->total; i++) {
          float* p = (float*)cvGetSeqElem(circles, i);
         CvPoint pt = cvPoint(cvRound(p[0]), cvRound(p[1]));//圆心坐标（p（0），p（1））
+        
 //        cvCircle(this->paneDraw, pt, cvRound(p[2]),CV_RGB(255,0,0), 3);
+        
         if (cvRound(p[2]) > maxRadius) {
             maxRadius = cvRound(p[2]);
             manRCircl = pt;
@@ -74,14 +89,18 @@ CvPoint Picture::getcenterPoint() {
     // 画出圆
     cvCircle(this->paneDraw, manRCircl, maxRadius,CV_RGB(255,0,0), 3);
     this->centerPoint = manRCircl;
+    this->radius = maxRadius;
     
     
     // 画出圆心
     cvCircle( this->paneDraw, manRCircl, 2, CV_RGB(255,0,0),-1, 8, 0 );
+    
+    
     cvNamedWindow("circle");
     cvShowImage("circle",this->paneDraw);
     
     cvWaitKey(0);
+    
     return manRCircl;
 };
 
@@ -122,7 +141,7 @@ void Picture::getPointer() {
             pt2.y = 0;
         }
         
-//        cvLine(color_dst,pt1,pt2,CV_RGB(255,0,0),1,8);
+//        cvLine(this->paneDraw,pt1,pt2,CV_RGB(255,0,0),1,8);
     }
 #else
     
@@ -131,15 +150,19 @@ void Picture::getPointer() {
     
 //    for (i=0;i<lines->total;i++)
 //    {
-        // 得到的直线转化成CvPoint型数据，该型数据包含点的横竖坐标；
+////         得到的直线转化成CvPoint型数据，该型数据包含点的横竖坐标；
 //        CvPoint *line = (CvPoint *)cvGetSeqElem(lines,i);
-        // 画线函数 分别为直线的起始端点和结束端点
-//        cvLine(color_dst,line[0],line[1],CV_RGB(255,0,0),1,CV_AA);
+////         画线函数 分别为直线的起始端点和结束端点
+//        cvLine(this->paneDraw,line[0],line[1],CV_RGB(255,0,0),1,CV_AA);
 //    }
 #endif
     // 存放找到的线段长度的数组
     double maxLength = 0;
     CvPoint *maxLengthline = 0;
+    // 圆心坐标
+    CvPoint center = this->centerPoint;
+    // 圆半径
+    float radius = this->radius;
     
     for (i = 0; i < lines->total; i++) {
         CvPoint *line = (CvPoint *)cvGetSeqElem(lines,i);
@@ -147,10 +170,12 @@ void Picture::getPointer() {
         int startY = line[0].y;
         int endX = line[1].x;
         int endY = line[1].y;
-        double length = sqrt(pow(startX - endX, 2) + pow(startY - endY, 2));
-        if (length > maxLength) {
-            maxLength = length;
-            maxLengthline = line;
+        if (getlength(center, line[0]) < radius && getlength(center, line[1]) < radius) {
+            double length = sqrt(pow(startX - endX, 2) + pow(startY - endY, 2));
+            if (length > maxLength) {
+                maxLength = length;
+                maxLengthline = line;
+            }
         }
     }
 //    std::cout << "maxLength = " << maxLength << std::endl;
@@ -190,9 +215,13 @@ void Picture::getScale() {
     CvPoint fullPoint =getScalePoint(image, this->fullPicSrc, CV_TM_SQDIFF_NORMED);
     std::cout<< "fullPoint: "<< fullPoint.x << "," << fullPoint.y << std::endl;
     this->fullScale =fullPoint;
+    
+    
+    
     cvCircle(this->paneDraw, fullPoint, 4,CV_RGB(255,0,0),-1, 8, 0);
     cvShowImage("scale", this->paneDraw);
     waitKey(0);
+    
 }
 
 // 获取满偏角度
@@ -231,6 +260,7 @@ double Picture::getData() {
     cvShowImage("data",this->paneDraw);
     
     cvWaitKey(0);
+    
     return data;
 }
 
@@ -240,6 +270,49 @@ double Picture::getData() {
 CvPoint getScalePoint(Mat image, String src, int method) {
     Mat tepl = imread(src);
     resize(tepl, tepl, Size(tepl.cols/2,tepl.rows/2),0,0,INTER_LINEAR);
+    CvPoint point;
+    int result_cols =  image.cols - tepl.cols + 1;
+    int result_rows = image.rows - tepl.rows + 1;
+    
+    Mat result = Mat( result_cols, result_rows, CV_32FC1 );
+    matchTemplate( image, tepl, result, method );
+    
+    double minVal, maxVal;
+    Point minLoc, maxLoc;
+    minMaxLoc( result, &minVal, &maxVal, &minLoc, &maxLoc, Mat() );
+
+    switch(method)
+    {
+        case CV_TM_SQDIFF:
+            point = minLoc;
+            //            return minVal / (tepl.cols * tepl.cols);
+            break;
+        case CV_TM_SQDIFF_NORMED:
+            point = minLoc;
+            //            return minVal;
+            break;
+        case CV_TM_CCORR:
+        case CV_TM_CCOEFF:
+            point = maxLoc;
+            //            return maxVal / (tepl.cols * tepl.cols);
+            break;
+        case CV_TM_CCORR_NORMED:
+        case CV_TM_CCOEFF_NORMED:
+        default:
+            point = maxLoc;
+            //            return maxVal;
+            break;
+    }
+    
+    rectangle(image, point, Point(point.x + tepl.cols, point.y + tepl.rows), Scalar(0, 255, 0), 2, 8, 0);
+    imshow("scalePoint", image);
+    waitKey(0);
+    
+    return  CvPoint(point.x + tepl.cols/2, point.y + tepl.rows/2);
+};
+// 表盘匹配
+Point getTemplate(Mat image, String src, int method) {
+    Mat tepl = imread(src);
     CvPoint point;
     int result_cols =  image.cols - tepl.cols + 1;
     int result_rows = image.rows - tepl.rows + 1;
@@ -273,9 +346,9 @@ CvPoint getScalePoint(Mat image, String src, int method) {
             //            return maxVal;
             break;
     }
-//    rectangle(image, point, Point(point.x + tepl.cols, point.y + tepl.rows), Scalar(0, 255, 0), 2, 8, 0);
-    return  CvPoint(point.x + tepl.cols/2, point.y + tepl.rows/2);
-};
+//        rectangle(image, point, Point(point.x + tepl.cols, point.y + tepl.rows), Scalar(0, 255, 0), 2, 8, 0);
+    return  point;
+}
 
 
 // 获取指针上离圆心最远的点
@@ -325,4 +398,15 @@ double Angle(Point cen, Point first, Point second)
     }
     
     return angleAMB;
+}
+
+// 求两点之间距离的平方
+
+double getlength (Point p1, Point p2) {
+    int startX = p1.x;
+    int startY = p1.y;
+    int endX = p2.x;
+    int endY = p2.y;
+    
+    return sqrt(pow(startX - endX, 2) + pow(startY - endY, 2));
 }
